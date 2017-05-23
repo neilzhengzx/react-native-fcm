@@ -1,9 +1,13 @@
 package com.evollu.react.fcm;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.util.Log;
 
 import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
@@ -13,25 +17,11 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.RemoteMessage;
-import com.google.firebase.messaging.RemoteMessage.Notification;
-
-import android.app.Application;
-import android.os.Bundle;
-import android.util.Log;
-
-import android.content.Context;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 public class FIRMessagingModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ActivityEventListener {
     private final static String TAG = FIRMessagingModule.class.getCanonicalName();
@@ -69,12 +59,6 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     }
 
     @ReactMethod
-    public void getFCMToken(Promise promise) {
-        Log.d(TAG, "Firebase token: " + FirebaseInstanceId.getInstance().getToken());
-        promise.resolve(FirebaseInstanceId.getInstance().getToken());
-    }
-
-    @ReactMethod
     public void presentLocalNotification(ReadableMap details) {
         Bundle bundle = Arguments.toBundle(details);
         mFIRLocalMessagingHelper.sendNotification(bundle);
@@ -103,16 +87,6 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
     @ReactMethod
     public void removeAllDeliveredNotifications(){
         mFIRLocalMessagingHelper.removeAllDeliveredNotifications();
-    }
-
-    @ReactMethod
-    public void subscribeToTopic(String topic){
-        FirebaseMessaging.getInstance().subscribeToTopic(topic);
-    }
-
-    @ReactMethod
-    public void unsubscribeFromTopic(String topic){
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(topic);
     }
 
     @ReactMethod
@@ -154,21 +128,6 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         }, intentFilter);
     }
 
-    @ReactMethod
-    public void send(String senderId, ReadableMap payload) throws Exception {
-        FirebaseMessaging fm = FirebaseMessaging.getInstance();
-        RemoteMessage.Builder message = new RemoteMessage.Builder(senderId + "@gcm.googleapis.com")
-            .setMessageId(UUID.randomUUID().toString());
-
-        ReadableMapKeySetIterator iterator = payload.keySetIterator();
-        while (iterator.hasNextKey()) {
-            String key = iterator.nextKey();
-            String value = getStringFromReadableMap(payload, key);
-            message.addData(key, value);
-        }
-        fm.send(message.build());
-    }
-
     private String getStringFromReadableMap(ReadableMap map, String key) throws Exception {
         switch (map.getType(key)) {
             case String:
@@ -192,32 +151,35 @@ public class FIRMessagingModule extends ReactContextBaseJavaModule implements Li
         getReactApplicationContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-            if (getReactApplicationContext().hasActiveCatalystInstance()) {
-                RemoteMessage message = intent.getParcelableExtra("data");
-                WritableMap params = Arguments.createMap();
-                WritableMap fcmData = Arguments.createMap();
-
-                if (message.getNotification() != null) {
-                    Notification notification = message.getNotification();
-                    fcmData.putString("title", notification.getTitle());
-                    fcmData.putString("body", notification.getBody());
-                    fcmData.putString("color", notification.getColor());
-                    fcmData.putString("icon", notification.getIcon());
-                    fcmData.putString("tag", notification.getTag());
-                    fcmData.putString("action", notification.getClickAction());
+                if (getReactApplicationContext().hasActiveCatalystInstance()) {
+                    sendEvent("FCMNotificationReceived", Arguments.fromBundle(intent.getExtras()));
                 }
-                params.putMap("fcm", fcmData);
-
-                if(message.getData() != null){
-                    Map<String, String> data = message.getData();
-                    Set<String> keysIterator = data.keySet();
-                    for(String key: keysIterator){
-                        params.putString(key, data.get(key));
-                    }
-                }
-                sendEvent("FCMNotificationReceived", params);
-
-            }
+//            if (getReactApplicationContext().hasActiveCatalystInstance()) {
+//                RemoteMessage message = intent.getParcelableExtra("data");
+//                WritableMap params = Arguments.createMap();
+//                WritableMap fcmData = Arguments.createMap();
+//
+//                if (message.getNotification() != null) {
+//                    Notification notification = message.getNotification();
+//                    fcmData.putString("title", notification.getTitle());
+//                    fcmData.putString("body", notification.getBody());
+//                    fcmData.putString("color", notification.getColor());
+//                    fcmData.putString("icon", notification.getIcon());
+//                    fcmData.putString("tag", notification.getTag());
+//                    fcmData.putString("action", notification.getClickAction());
+//                }
+//                params.putMap("fcm", fcmData);
+//
+//                if(message.getData() != null){
+//                    Map<String, String> data = message.getData();
+//                    Set<String> keysIterator = data.keySet();
+//                    for(String key: keysIterator){
+//                        params.putString(key, data.get(key));
+//                    }
+//                }
+//                sendEvent("FCMNotificationReceived", params);
+//
+//            }
             }
         }, intentFilter);
     }

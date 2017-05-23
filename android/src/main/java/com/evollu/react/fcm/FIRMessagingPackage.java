@@ -1,5 +1,7 @@
 package com.evollu.react.fcm;
 
+import android.content.Intent;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -11,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class FIRMessagingPackage implements ReactPackage {
+    Intent mIntent;
 
     public FIRMessagingPackage(){
     }
