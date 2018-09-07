@@ -5,6 +5,7 @@ package com.evollu.react.fcm;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -81,7 +82,16 @@ public class FIRLocalMessagingHelper {
                 title = mContext.getPackageManager().getApplicationLabel(appInfo).toString();
             }
 
-            NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext)
+            String channelID = "123";
+            if(Build.VERSION.SDK_INT>=26){
+                //设置channelID
+                String channelName = "channel_name";
+                NotificationChannel channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+                NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+                manager.createNotificationChannel(channel);
+            }
+
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(mContext, channelID)
                     .setContentTitle(title)
                     .setContentText(bundle.getString("body"))
                     .setTicker(bundle.getString("ticker"))
