@@ -20,7 +20,6 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -31,6 +30,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import androidx.core.app.NotificationCompat;
 
 public class FIRLocalMessagingHelper {
     private static final long DEFAULT_VIBRATION = 300L;
