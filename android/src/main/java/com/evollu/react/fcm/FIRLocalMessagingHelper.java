@@ -191,7 +191,7 @@ public class FIRLocalMessagingHelper {
 
             if(!mIsForeground || bundle.getBoolean("show_in_foreground")){
                 Intent intent = new Intent(mContext, intentClass);
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.putExtras(bundle);
                 intent.setAction(bundle.getString("click_action"));
 
